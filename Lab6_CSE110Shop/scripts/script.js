@@ -1,61 +1,72 @@
 // Script.js
+// localStorage.clear();
+var count_cart = document.getElementById('cart-count');
+var c = document.getElementById('cart-count').innerHTML;
+if(localStorage.getItem('count') == null) {
+  count_cart.textContent = 0;
+} else{
+  count_cart.textContent = localStorage.getItem('count');
+} 
+window.addEventListener('DOMContentLoaded', ()=>{
 
-window.addEventListener('DOMContentLoaded', postData('https://fakestoreapi.com/products', { answer: 42 }));
-var count = document.getElementById('cart-count');
+fetch('https://fakestoreapi.com/products')
+  .then(response => response.json())
+  .then(data => {
 
-async function postData(url = '', data = {}) {
-  const response = await fetch(url);
-  var data = await response.json();
-  // console.log(JSON.stringify(data));
-  // for(i = 0; i < data.length; i++){
-  //   console.log(JSON.stringify(data[i].price));
-  //   if(localStorage.getItem(data[i].id == null)){
-  //     localStorage.setItem(data[i].id, data[i]);
-  //   }
-  // }
   if (localStorage.getItem('item_set') == null){
-    localStorage.setItem('item_set', data); 
+    localStorage.setItem('item_set', JSON.stringify(data)); 
   }
-  return data; 
-}
+  // console.log(JSON.stringify(data));
 
-class ProductContainer extends HTMLElement {
-  constructor(){
-    super();
-    let objectArray = JSON.parse(localStorage.getItem('item_set'));
-    for(let i = 0; i < objectArray.length; i++){
-      let liObject = document.createElement('product-item');
-      liObject.className = "[object object]";
-      const shadowObject = liObject.shadowRoot;
-      shadowObject.querySelector('img').src = objectArray[i].imgage;
-      shadowObject.querySelector('img').alt = objectArray[i].title;
-      shadowObject.querySelector('.price').textContent = JSON.stringify(objectArray[i].price);
-      shadowObject.querySelector('.title').textContent = objectArray[i].title;
-      shadowObject.querySelector('button').id = objectArray[i].id;
+  let objectArray = JSON.parse(localStorage.getItem('item_set'));
 
-      if(localStorage.getItem(objectArray[i].id) == null){
-        shadowObject.querySelector('button').setAttribute('unaddable', false);
-      } else {
-        shadowObject.querySelector('button').textContent = 'Remove from Cart';
-        shadowObject.querySelector('button').setAttribute('unaddable', true);
-      }
+  for(let i = 0; i < objectArray.length; i++){
+    
+    let liObject = document.createElement("product-item");
+    liObject.className = "[object object]";
+  
+    let shadowObject = liObject.shadowRoot;
+    // console.log(shadowObject == null);
+    shadowObject.querySelector('img').src = objectArray[i].image;
+    shadowObject.querySelector('img').alt = objectArray[i].title;
+    shadowObject.querySelector('.price').textContent = '$' + objectArray[i].price;
+    shadowObject.querySelector('.title').textContent = objectArray[i].title;
+    shadowObject.querySelector('button').id = objectArray[i].id;
 
-      shadowObject.querySelector('button').onclick = function(){myfunction(this)};
-      
-      document.getElementById('product-list').appendChild(liObject);
+    if(localStorage.getItem(objectArray[i].id) == 1){
+      shadowObject.querySelector('button').textContent = 'Remove from Cart';
+      shadowObject.querySelector('button').setAttribute('addable', false);
+    } else {
+      shadowObject.querySelector('button').textContent = 'Add to Cart';
+      shadowObject.querySelector('button').setAttribute('addable', true);
     }
+
+    shadowObject.querySelector('button').onclick = function(){myfunction(this)};
+
+    document.getElementById('product-list').appendChild(liObject);
+}
     function myfunction(e) {
-      if(e.getAttribute('unaddable') == false){
-        count++;
-        let c = document.getElementById('cart-count').innerHTML;
-        localStorage.setItem('cart'. count);
-        localStorage.setItem(e.id, 'unaddable');
-        c = count;
-        e.querySelector('button').textContent = 'Add to Cart';
+
+      c = localStorage.getItem('count');
+
+      if(localStorage.getItem(e.id) == 1){
+        if(c > 0){
+          c--;
+          localStorage.setItem(e.id, 0);
+          localStorage.setItem('count', c);
+          e.textContent = 'Add to Cart';
+          alert('Removed from Cart!');
+          }
+      } else {
+          console.log(c);
+          c++;
+          console.log(c);
+          localStorage.setItem(e.id, 1);
+          localStorage.setItem('count', c);
+          e.textContent = 'Remove from Cart';
+          alert('Added to Cart!');
       }
+      count_cart.textContent = c;
     }
-  }
-}
-
-
-customElements.define('product-list', ProductContainer);
+  
+})})
